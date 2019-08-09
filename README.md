@@ -14,4 +14,4 @@ It is recommended to run this program every day to prevent data gaps.
 Do not open NOAA_Weather.xlsx while this program is executing. The weather.NOAA_Weather table on the SQL database may be unable to take SQL queries while the utility is running.
 
 ### Notice of Publication
-This utility is designed to be used by Con Edison only. Certain information has been redacted from the source code and associated files to provide corporate security. The program as-is is not runnable without replacing "//REDACTED//" with valid entries within the source file.
+This utility is designed to be used by Con Edison only. Certain information has been redacted from the source code and associated files to provide corporate security. The program is not runnable as-is without replacing "//REDACTED//" with valid entries within the source file.
