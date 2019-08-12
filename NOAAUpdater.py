@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import ctypes
 import pyodbc
-import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font
 from passlib.hash import sha256_crypt
+from requests import post
 from tkinter import Button
 from tkinter import Entry
 from tkinter import Label
@@ -21,7 +21,7 @@ server_user = ''
 server_pass = ''
 
 # Function definitions.
-def auth():
+def auth(e=None):
     if (sha256_crypt.verify(root_field.get(), '$5$rounds=535000$LBgMfjzfpi3Oo44j$a.Wp0Hw42z8SmRQbhfmlUHUeEwsr/euG1E1OHm6jQhC')):
         global cleared
         cleared = True
@@ -29,7 +29,7 @@ def auth():
     else:
         messagebox.showerror('Authentication Error', 'The password entered was incorrect. Please try again.')
         
-def server_submit():
+def server_submit(e=None):
     global server_user
     global server_pass
     server_user = server_user_field.get()
@@ -72,7 +72,7 @@ def update(payload={'product': 'CF6', 'station': 'NYC', 'recent': 'yes' }, check
     global wb
     # Load the NOAA website.
     try:
-        source = requests.post(url='https://w2.weather.gov/climate/getclimate.php?wfo=okx', data=payload)
+        source = post(url='https://w2.weather.gov/climate/getclimate.php?wfo=okx', data=payload)
         report = BeautifulSoup(source.text, 'lxml').pre.text.splitlines()
     except:
         MessageBox(None,
@@ -104,7 +104,6 @@ def update(payload={'product': 'CF6', 'station': 'NYC', 'recent': 'yes' }, check
                     date += '0' + str(int(cell.value))
                 else:
                     date += str(int(cell.value))
-
         max_date = date[2:6] + date[0:2] + date[6:]
     except ValueError:
         MessageBox(None, 
@@ -167,6 +166,7 @@ root_button.grid(row=2, column=0, pady=5)
 root.lift()
 root.attributes('-topmost', True)
 root.resizable(width=False, height=False)
+root.bind('<Return>', auth)
 root.update()
 root.mainloop()
 
@@ -200,6 +200,7 @@ if (cleared):
     server.lift()
     server.attributes('-topmost', True)
     server.resizable(width=False, height=False)
+    server.bind('<Return>', server_submit)
     server.update()
     server.mainloop()
 
@@ -212,6 +213,7 @@ if (cleared):
                     'Fatal Error', 0x10 | 0x1000)
         raise KeyboardInterrupt
 
+    # Begin main update loop.
     try:
         update()
     except AssertionError:
