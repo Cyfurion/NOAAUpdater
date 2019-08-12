@@ -70,8 +70,6 @@ def date_id(month, year):
 def update(payload={'product': 'CF6', 'station': 'NYC', 'recent': 'yes' }, check_assert=True):
     global ws
     global wb
-    global conn
-    global cursor
     # Load the NOAA website.
     try:
         source = requests.post(url='https://w2.weather.gov/climate/getclimate.php?wfo=okx', data=payload)
@@ -156,25 +154,6 @@ def update(payload={'product': 'CF6', 'station': 'NYC', 'recent': 'yes' }, check
         for cell in row:
             cell.font = Font(name='Arial', size=12)
             cell.alignment = Alignment(horizontal='center')
-        
-    # Update the SQL server.
-    cursor.execute("USE //REDACTED//;")
-    cursor.execute("TRUNCATE TABLE [weather].[NOAA_Weather];")
-    for row in ws.iter_rows(min_row=2, max_col=23, values_only=True):
-        while(len(row) < 23):
-            row.append("NULL")
-        try:
-            cursor.execute("INSERT INTO [weather].[NOAA_Weather] VALUES "
-                            + str(tuple(x if is_number(x) else "NULL" for x in row)).replace("'NULL'", "NULL") + ";")
-        except:
-            MessageBox(None, 'SQL query failed. Please try again later.', 'Fatal Error', 0x10 | 0x1000)
-            raise
-
-    # Commit updates.
-    conn.commit()
-    
-    # Save the workbook.
-    wb.save('NOAA_Weather.xlsx')
 
 root = Tk()
 root.title('NOAAUpdater')
@@ -247,6 +226,25 @@ if (cleared):
                 current_year += 1
         if (datetime.now().day != 1):
             update(check_assert=False)
+
+    # Update the SQL server.
+    cursor.execute("USE //REDACTED//;")
+    cursor.execute("TRUNCATE TABLE [weather].[NOAA_Weather];")
+    for row in ws.iter_rows(min_row=2, max_col=23, values_only=True):
+        while(len(row) < 23):
+            row.append("NULL")
+        try:
+            cursor.execute("INSERT INTO [weather].[NOAA_Weather] VALUES "
+                            + str(tuple(x if is_number(x) else "NULL" for x in row)).replace("'NULL'", "NULL") + ";")
+        except:
+            MessageBox(None, 'SQL query failed. Please try again later.', 'Fatal Error', 0x10 | 0x1000)
+            raise
+
+    # Commit updates.
+    conn.commit()
+    
+    # Save the workbook.
+    wb.save('NOAA_Weather.xlsx')
 
     # Close the SQL connection.
     cursor.close()
